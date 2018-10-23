@@ -1,6 +1,5 @@
 import pygame
 from pygame.locals import *
-import game
 from constants import *
 import pickle
 
@@ -12,7 +11,7 @@ def transform_to(x, y):
 
 
 def transform_from(x, y):
-    return [[x * GRID_SIZE, y * GRID_SIZE],[(x+1) * GRID_SIZE, (y+1) * GRID_SIZE]]
+    return [[x * GRID_SIZE, y * GRID_SIZE], [(x + 1) * GRID_SIZE, (y + 1) * GRID_SIZE]]
 
 
 def draw_rect(surf, x1, y1, x2, y2, c):
@@ -28,21 +27,8 @@ def draw_ellipse(surf, x1, y1, x2, y2, c):
 def draw(surf, world_):
     for _i in range(WIDTH_):
         for _j in range(HEIGHT_):
-            if world_[_i][_j] == 0:
-                draw_rect(surf, transform_from(_i, _j)[0][0], transform_from(_i, _j)[0][1],
-                          transform_from(_i, _j)[1][0], transform_from(_i, _j)[1][1], WHITE)
-            elif world_[_i][_j] == 1:
-                draw_rect(surf, transform_from(_i, _j)[0][0], transform_from(_i, _j)[0][1],
-                          transform_from(_i, _j)[1][0], transform_from(_i, _j)[1][1], BLACK)
-            elif world_[_i][_j] == 2:
-                draw_rect(surf, transform_from(_i, _j)[0][0], transform_from(_i, _j)[0][1],
-                          transform_from(_i, _j)[1][0], transform_from(_i, _j)[1][1], GREEN)
-            elif world_[_i][_j] == 3:
-                draw_rect(surf, transform_from(_i, _j)[0][0], transform_from(_i, _j)[0][1],
-                          transform_from(_i, _j)[1][0], transform_from(_i, _j)[1][1], RED)
-            elif world_[_i][_j] == 4:
-                draw_rect(surf, transform_from(_i, _j)[0][0], transform_from(_i, _j)[0][1],
-                          transform_from(_i, _j)[1][0], transform_from(_i, _j)[1][1], BLUE)
+            draw_rect(surf, transform_from(_i, _j)[0][0], transform_from(_i, _j)[0][1],
+                      transform_from(_i, _j)[1][0], transform_from(_i, _j)[1][1], BLOCKS[world_[_i][_j]].color)
 
 
 def main():
@@ -51,17 +37,21 @@ def main():
     surface = surface.convert()
     surface.fill(WHITE)
 
+    pick = 0
+    perm_m = True
+    perm_k = True
+
     world = [[0 for _ in range(HEIGHT_)] for _ in range(WIDTH_)]
 
     while True:
         if pygame.key.get_pressed()[K_s]:
-            _file_name = 'maps/' + input('(Write file name): ')
+            _file_name = 'maps/' + input('(Write file name to save): ')
 
             with open(_file_name, 'wb') as _f:
                 pickle.dump(world, _f)
 
         if pygame.key.get_pressed()[K_l]:
-            _file_name = 'maps/' + input('(Write file name): ')
+            _file_name = 'maps/' + input('(Write file name to load): ')
             try:
                 with open(_file_name, 'rb') as _f:
                     world = pickle.load(_f)
@@ -73,21 +63,19 @@ def main():
             if event.type == QUIT:
                 return
 
+        if (pygame.mouse.get_pressed()[2] and perm_m) or (pygame.key.get_pressed()[K_n] and perm_k):
+            pick += 1
+            if pick >= len(BLOCKS):
+                pick = 0
+
+            print('> ' + BLOCKS[pick].name)
+
+        perm_m = not pygame.mouse.get_pressed()[2]
+        perm_k = not pygame.key.get_pressed()[K_n]
+
         if pygame.mouse.get_pressed()[0]:
             _x, _y = transform_to(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-            world[_x][_y] = 1
-        if pygame.key.get_pressed()[K_d]:
-            _x, _y = transform_to(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-            world[_x][_y] = 0
-        if pygame.key.get_pressed()[K_b]:
-            _x, _y = transform_to(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-            world[_x][_y] = 3
-        if pygame.key.get_pressed()[K_g]:
-            _x, _y = transform_to(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-            world[_x][_y] = 2
-        if pygame.key.get_pressed()[K_p]:
-            _x, _y = transform_to(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-            world[_x][_y] = 4
+            world[_x][_y] = pick
 
         draw(surface, world)
         screen.blit(surface, (0, 0))

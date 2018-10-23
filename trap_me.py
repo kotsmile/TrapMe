@@ -1,9 +1,13 @@
-
+import map_creator
+import game
 
 if __name__ == '__main__':
-    line = input()
+    g = game.Game('test')
+    g.start()
 
-    if line[0] == 'c':
-        pass
-    elif line[0] == 's':
-        pass
+    # line = input('> ')
+    # if line[0] == 'c':
+    #     map_creator.main()
+    # elif line[0] == 's':
+    #     g = game.Game('fort')
+    #     g.start()
